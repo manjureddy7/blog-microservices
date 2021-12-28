@@ -1,0 +1,112 @@
+To create a Post we use POST_SERVICE
+
+To create a Comment we use COMMENT_SERVICE
+
+To get all POSTS & COMMENTS  we use QUERY_SERVICE, this service just retrives the comments & posts 
+
+To moderate all comments ie to examine all the comments we use MODERATION_SERVICE
+
+To make EVENT based communication we use EVENT_BUS_SERVICE
+
+So how do the flow works ?
+
+Whenever we create a POST, we raise an event or strictly a POST call to the EVENT_BUS_SERVICE 
+
+ const event = {
+    type: 'POST_CREATED',
+    data: {
+        id, title
+    }
+}
+
+code: await axios.post('http://localhost:4005/events', event); // event to EVENT_BUS_SERVICE
+
+
+Now in EVENT_BUS_SERVICE Whenever we get this post /events call we (POST) call  all the services and sending this event
+
+The idea is all the services will send these events to event bus & event bus will send || emit those events
+to corresponding services or all services
+
+When a POST is created
+
+from UI make a POST call to POST_SERVICE (this will update it's own DB) and then raise a event to EVENT_BUS_SERVICE
+
+UI -> POST_SERVICE -> EVENT_BUS_SERVICE (this will receive the event & emit it) ->(raise an event to query service with event & data) QUERY_SERVICE  (this will update it's DB with post details)
+
+To GET  all POSTS
+
+UI will make a get call to QUERY_SERVICE to list all the posts
+
+UI (get posts call) -> QUERY_SERVICE
+
+
+When a COMMENT is created
+
+UI (post call to comment service) -> COMMENT_SERVICE (emit an event to event vus wiht event & data)-> EVENT_BUS_SERVICE (now this will raise an event comment_created) -> 
+
+This event will be heard by two services QUERY_SERVICE & MODERATION_SERVICE 
+
+EVENT_BUS_SERVICE (parallely) makes below calls
+EVENT_BUS_SERVICE  -> QUERY_SERVICE (updates it's DB)
+
+EVENT_BUS_SERVICE -> MODERATION_SERVICE
+
+Now the JOB of MODERATION_SERVICE is to take the comment & read it's comment and see if this comment is ok to show on the UI
+
+(takes in the comment) & run it's own algorithm to find if this comment is ok to proceed or not
+
+& raise an event to event bus
+
+raise an event called (COMMENT_MODERATED) MODERATION_SERVICE -> EVENT_BUS_SERVICE -> COMMENT_SERVICE (this service will look for the event called COMMENT_MODERATED & run's its own algorithm & updates the comment in DB)
+
+after the comment service updates it's DB with the event data it will raise an event called COMMENT_UPDATED to event bus
+from there it 
+
+COMMENT_SERVICE (wil raise an evnt saying hey guys comment has updated COMMENT_UPDATED) -> EVENT_BUS_SERVICE -> QUERY_SERVICE (this will listen to that event & updates it's own DB)
+
+
+TO get all comments
+
+UI (GET call to retrive all the comment) -> QUERY_SERVICE
+
+final flow
+
+1. To get all POSTS
+
+UI -> QUERY_SERVICE
+
+2. To craete a POST
+
+UI -> POST_SERVICE (background, POST_SERVICE -> EVENT_BUS_SERVICE -> QUERY_SERVICE)
+
+3. To get all comments for a specific post
+
+UI -> QUERY_SERVICE
+
+4. To create a comment
+
+UI -> COMMENT_SERVICE 
+
+In the background it will do two things
+
+parallely below two things will happen
+
+COMMENT_SERVICE -> EVENT_BUS_SERVICE -> QUERY_SERVICE
+COMMENT_SERVICE -> EVENT_BUS_SERVICE -> MODERATION_SERVICE
+
+Now after some delay || instantly the MODERATION_SERVICE will do it's work 
+
+MODERATION_SERVICE -> EVENT_BUS_SERVICE -> COMMENT_SERVICE
+
+after the COMMENT_SERVICE updates the comment
+
+COMMENT_SERVICE -> EVENT_BUS_SERVICE -> QUERY_SERVICE (this will update the corresponding comment it's own DB )
+
+
+
+
+DOCKER COMMANDS
+
+to get bash of container -> docker run -it manureddy/posts sh
+
+

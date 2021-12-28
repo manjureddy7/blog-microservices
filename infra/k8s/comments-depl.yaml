@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comments-depl # Name of the deployment
+spec:
+  replicas: 1 # How many replicas you want
+  selector: # Finding || getting the right pod information
+    matchLabels: # We prpvide the label sections below
+      app: comments # This is a label a key-value pair
+      # label2: comments so the key & value can be anything
+  template: # Pod this deployment is going to create
+    metadata:
+      labels:
+        app: comments
+    spec:
+      containers:
+        - name: comments
+          image: anunirva/sgm-comments
+          env:
+          - name: EVENT_BUS_SERVICE
+            value: "http://event-bus-srv:4005"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: comments-clusterip-srv
+spec:
+  selector:
+    app: comments
+  type: ClusterIP
+  ports:
+    - name: comments
+      protocol: TCP
+      port: 4001
+      targetPort: 4001
+#This service can't be accessed from outside, will be visible within the cluster

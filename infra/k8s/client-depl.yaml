@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-depl # Name of the deployment
+spec:
+  replicas: 1 # How many replicas you want
+  selector: # Finding || getting the right pod information
+    matchLabels: # We prpvide the label sections below
+      app: client # This is a label a key-value pair
+      # label2: comments so the key & value can be anything
+  template: # Pod this deployment is going to create
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+        - name: client
+          image: anunirva/sgm-client
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-clusterip-srv
+spec:
+  selector:
+    app: client
+  type: ClusterIP
+  ports:
+    - name: client
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+#This service can't be accessed from outside, will be visible within the cluster

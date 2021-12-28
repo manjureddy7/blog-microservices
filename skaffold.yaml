@@ -1,0 +1,58 @@
+apiVersion: skaffold/v2beta22
+kind: Config
+deploy:
+  kubectl:
+    manifests:
+      - ./infra/k8s/*
+build:
+  local:
+    push: false
+  artifacts:
+    - image: anunirva/sgm-client
+      context: client # Client folder skafold will rebuild image whenever we change file
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+    - image: anunirva/sgm-posts
+      context: posts # Client folder skafold will rebuild image whenever we change file
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.js'
+            dest: . 
+    - image: anunirva/sgm-comments
+      context: comments # comments folder skafold will rebuild image whenever we change file
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.js'
+            dest: . 
+    - image: anunirva/sgm-event-bus
+      context: event-bus # event-bus folder skafold will rebuild image whenever we change file
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.js'
+            dest: . 
+    - image: anunirva/sgm-moderation
+      context: moderation # moderation folder skafold will rebuild image whenever we change file
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.js'
+            dest: . 
+    - image: anunirva/sgm-query
+      context: query # query folder skafold will rebuild image whenever we change file
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.js'
+            dest: . 
